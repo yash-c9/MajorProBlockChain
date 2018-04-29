@@ -1,0 +1,79 @@
+
+{%load static%}
+{%block content%}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/sha1.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+
+
+<input type="text" id="name">
+<input type="submit" onclick = "submit_button()" value="Submit Question">
+
+
+<script>
+web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+json_string='[{"constant":false,"inputs":[{"name":"_user_id","type":"string"}],"name":"addUser","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_link","type":"string"},{"name":"_ts","type":"string"},{"name":"_hash","type":"string"}],"name":"storeLink","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"}],"name":"retrieveLink","outputs":[{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"totalUsers","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"}],"name":"_isValid","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"}]';
+
+abi = JSON.parse(json_string);
+
+HealthcareContract = web3.eth.contract(abi);
+
+// In your nodejs console, execute contractInstance.address to get the address at which the contract is deployed and change the line below to use your deployed address
+
+var contractInstance = HealthcareContract.at('0x4bc6796c093b7fca6ada1cd8dc813949bc783bb0');
+var encryption_key = "";
+var username = "{{user.username}}"
+function get_and_validate_encrky(){
+    validated = false;
+        encryption_key = prompt("enter the encryption key");
+        if(encryption_key.length!=0){
+              var hash = CryptoJS.SHA1(encryption_key);
+              encryption_key_hash = CryptoJS.enc.Hex.stringify(hash);
+              $.post('/encryption_key_verify/', {encryption_key: encryption_key_hash}, function(response) {
+            console.log(response);
+            if(response == 'Yes'){   
+                $.post('generate_id/', {name:data}, function(response) {
+                    var response_array = response.split(',');
+                    var link = response_array[0];
+                    var timestamp = response_array[1];
+                    var hash = response_array[2];
+                    //alert("hello"+link+timestamp+hash);
+                    //do bloackchain stuff
+                    var result = contractInstance.storeLink(username, link_enc, timestamp_enc, hash_enc, encryption_key_hash, {from: web3.eth.accounts[0]})
+                    if(result == 'Yes'){
+
+                         $.post('validate_data/', {result:result}, function(response) {
+                            if(response=='Yes'){
+
+                            }
+                            else{
+
+                            }
+                          });
+                   }
+
+                    })
+
+
+                           
+            }
+            else{
+              get_and_validate_encrky();
+            }
+
+      });
+      }
+
+      return validated;
+
+}
+function submit_button(){
+    //validation()
+    get_and_validate_encrky();
+}
+</script>
+
+
+{%endblock%}

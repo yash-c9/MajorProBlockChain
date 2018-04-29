@@ -1,0 +1,90 @@
+{% extends 'website/templates/base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block title %}Profile{% endblock %}
+{% block content%}
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/sha1.js"></script>
+<div class="w3-container">
+  <h2>Profile- {{user.username}}</h2>
+<br>
+<br>
+<center>
+  <table class="w3-table">
+    <tr>
+      <th>Category</th>
+      <th>Details</th>
+    </tr>
+    <tr>
+      <td>Name</th>
+      <td id="1">{{ name }}</td>
+
+    </tr>
+    <tr>
+      <td>Address</th>
+      <td id=2>{{ address }}</td>
+
+    </tr>
+    <tr>
+      <td>Date of Birth </td>
+      <td id=3>{{ dob }}</td>
+    </tr>
+    
+  </table>
+</center>
+<center><a href="/edit-profile" class="w3-button  w3-section w3-teal w3-ripple w3-padding">Edit</a></center>
+</div>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<script>
+var encryption_key="";
+var name = "{{name}}";
+var address = "{{address}}";
+var dob = "{{dob}}";
+function decrypt(){
+  name_dec = CryptoJS.AES.decrypt(name, encryption_key);
+  address_dec = CryptoJS.AES.decrypt(address, encryption_key);
+  dob_dec = CryptoJS.AES.decrypt(dob, encryption_key);
+  console.log(name_dec.toString(CryptoJS.enc.Utf8));
+  
+  document.getElementById("1").innerHTML = name_dec.toString(CryptoJS.enc.Utf8);
+  document.getElementById("2").innerHTML = address_dec.toString(CryptoJS.enc.Utf8);
+  document.getElementById("3").innerHTML = dob_dec.toString(CryptoJS.enc.Utf8);
+}
+
+function get_and_validate_encrky(){
+    validated = false;
+        encryption_key = prompt("enter the encryption key");
+        if(encryption_key.length!=0){
+              var hash = CryptoJS.SHA1(encryption_key);
+              encryption_key_hash = CryptoJS.enc.Hex.stringify(hash);
+          $.post('/encryption_key_verify/', {encryption_key: encryption_key_hash}, function(response) {
+            console.log(response);
+            if(response == 'Yes'){   
+                decrypt();            
+            }
+            else{
+              get_and_validate_encrky();
+            }
+
+      });
+      }
+
+      return validated;
+
+}
+
+$(document).ready(function() {
+  console.log(name);
+  console.log(address);
+  console.log(dob);
+  get_and_validate_encrky();
+  });
+
+</script>
+{% endblock %}
