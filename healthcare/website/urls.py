@@ -10,5 +10,8 @@ urlpatterns = patterns(
     url(r'^generate_id/$', views.generate_id, name='generate_id'),
     url(r'^validate_data/$', views.validate_data, name='validate_data'),
     url(r'^profile/$', views.profile_data, name='profile_data'),
-    url(r'edit-profile/$', views.edit_profile, name='edit_profile'),
+    url(r'^edit-profile/$', views.edit_profile, name='edit_profile'),
+    url(r'^healthdata/$', views.healthdata, name='healthdata_input'),
+    url(r'^healthcare-validate/$', views.healthdata_validate, name='healthcare-validate'),
+    url(r'^healthcare-recieve/$', views.healthdata_recieve, name='healthcare-recieve'),
 )

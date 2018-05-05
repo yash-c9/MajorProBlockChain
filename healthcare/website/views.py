@@ -4,7 +4,7 @@ from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Profile
+from .models import Profile, Patient_Id, Patient_Data
 
 # Create your views here.
 
@@ -57,8 +57,10 @@ def profile_data(request):
 		print dob
 		encrky = request.POST.get('encrky')
 		print encrky
+
 		profile = Profile(user=user, name=name, address=address, dob=dob, encr_key=encrky)
 		profile.save()
+
 
 		return HttpResponse("Done")
 
@@ -78,6 +80,7 @@ def profile_data(request):
 	        }
     		context.update(csrf(request))
     		return render(request, 'website/templates/profile-page.html', context)
+
 
 @csrf_exempt
 @login_required
@@ -109,6 +112,7 @@ def edit_profile(request):
 			profile = Profile.objects.get(user=user)
 			print profile
 			print profile.name
+
 			context = {
 	        'name': profile.name,
 	        'address': profile.address,
@@ -117,3 +121,41 @@ def edit_profile(request):
     		context.update(csrf(request))
     		return render(request, 'website/templates/edit-profile-page.html', context)
 
+
+@csrf_exempt
+@login_required
+def healthdata(request):
+	return render(request, 'website/templates/healthdata-input.html')
+
+
+
+@csrf_exempt
+@login_required
+def healthdata_recieve(request):
+	print "sdlfnejgi"
+	if request.method == 'POST':
+		print 'data recieved'
+		no = request.POST.get('no')
+
+		date = request.POST.get('date').split('|||')
+		symptoms = request.POST.get('symptoms').split('|||')
+		meds = request.POST.get('meds').split('|||')
+		diagnosis = request.POST.get('diagnosis').split('|||')
+		doctor = request.POST.get('doctor').split('|||')
+		patient_id = Patient_Id(is_valid = False)
+		patient_id.save()
+		id_p = patient_id.id
+		i = 0
+		while i<int(no):
+			patient_data = Patient_Data(doctor = doctor[i],	date = date[i], symptoms = symptoms[i], diagnosis = diagnosis[i], medicine = meds[i], procedure = "None", patient_id = patient_id)
+			patient_data.save()
+			i+=1
+
+		return HttpResponse(str(id_p)+","+'hash')
+
+
+@csrf_exempt
+@login_required
+def healthdata_validate(request):
+	print request.POST.get('response')
+	return HttpResponseRedirect("/")

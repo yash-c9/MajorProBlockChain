@@ -7,10 +7,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/sha1.js"></script>
+<script src="https://cdn.rawgit.com/ethereum/web3.js/develop/dist/web3.js"></script>
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script type="text/javascript">
-/*web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-json_string='[{"constant":false,"inputs":[{"name":"_user_id","type":"string"}],"name":"addUser","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_link","type":"string"},{"name":"_ts","type":"string"},{"name":"_hash","type":"string"}],"name":"storeLink","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"}],"name":"retrieveLink","outputs":[{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"totalUsers","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"}],"name":"_isValid","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"}]';
+web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+json_string='[{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_encryption_key_hash","type":"string"}],"name":"addUser","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_hash","type":"string"}],"name":"storeHash","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_link","type":"string"}],"name":"storeLink","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"totalUsers","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_encryption_key_hash","type":"string"}],"name":"retrieveLink","outputs":[{"name":"","type":"string"},{"name":"","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_encryption_key_hash","type":"string"}],"name":"_isValid","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"}]';
 
 abi = JSON.parse(json_string);
 
@@ -18,7 +19,8 @@ HealthcareContract = web3.eth.contract(abi);
 
 // In your nodejs console, execute contractInstance.address to get the address at which the contract is deployed and change the line below to use your deployed address
 
-var contractInstance = HealthcareContract.at('0x4bc6796c093b7fca6ada1cd8dc813949bc783bb0');*/
+var contractInstance = HealthcareContract.at('0xf00c316fd80dd64c87472bf22b2141349c1ceb87');
+
 var encryption_key_hash = "";
 function validate_form(){
     var name = document.getElementById("name").value;
@@ -77,10 +79,12 @@ function submitButton(){
             var name = document.getElementById("name").value;
             var address = document.getElementById("address").value;
             var dob = document.getElementById("dob").value;
+            var username = '{{user.username}}';
             console.log("form about to be submitted");
-            //contractInstance.addUser(username, encryption_key_hash, {from: web3.eth.accounts[0]}, function(){
+            contractInstance.addUser(username, encryption_key_hash, {from: web3.eth.accounts[0]}, function(result){
+                console.log(result);
              $("form").submit();
-            //}) 
+            }) 
            
 
         }
@@ -92,6 +96,7 @@ function submitButton(){
        <h2 class="w3-center">Profile</h2>
                 <div class="w3-row w3-section">
                     <div class="w3-rest">
+
                     <center>
                       
                          <input type="text" id="name" name="name" placeholder="Full Name">

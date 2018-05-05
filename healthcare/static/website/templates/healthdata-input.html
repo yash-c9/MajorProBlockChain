@@ -1,0 +1,166 @@
+{% extends 'website/templates/base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% block title %}Profile{% endblock %}
+{% block content%}
+
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://cdn.rawgit.com/ethereum/web3.js/develop/dist/web3.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/sha1.js"></script>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 90%;
+}
+td, th {
+    border: 1px solid #ddd;
+    text-align: center;
+    padding: 20px;
+}
+tr:nth-child(even)
+{background-color: #f2f2f2;}
+tr:hover {background-color: #ddd;}
+th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: #4CAF50;
+    color: white;
+}
+</style>
+
+<body>
+
+<h2 align="center">Your Medical History</h2>
+
+<form method="post" name="form" id="form" action="/healthdata/">{% csrf_token %}
+<input type="hidden" id="no_of_entries" >
+<div class="input_fields_wrap" id="myText[0]">
+<table align="center">
+  <tr>
+  	<div class="col-sm-1" style="background-color:#f6f8ed;">
+      <th class="w3-teal">Date of Checkup</th>
+    </div>
+    <div class="col-sm-1" style="background-color:#f6f8ed;">
+      <th class="w3-teal">Name of Doctor</th>
+    </div>
+    <div class="col-sm-4" style="background-color:#e6fff7;">
+      <th class="w3-teal">Observed Symptoms</th>
+    </div>
+    <div class="col-sm-3" style="background-color:#ffffe6;">
+      <th class="w3-teal">Result of Diagnosis</th>
+    </div>
+    <div class="col-sm-3" style="background-color:#ffebe6;">
+      <th class="w3-teal">Prescribed Medicines</th>
+    </div>
+  </tr>
+  <tr>
+  	<td><input type="date" name="date-of checkup" id="date[1]" placeholder="Enter the Date of Checkup"></td>
+	<td><textarea rows="2" cols="20" class="form-control" id="doc[1]" placeholder="Enter the name of Doctor"></textarea></td>
+    <td><textarea rows="2" cols="20" class="form-control" id="symp[1]" placeholder="Enter the symptoms Observed"></textarea></td>
+    <td><textarea rows="2" cols="20" class="form-control" id="diag[1]" placeholder="Enter the Result of Diagnosis"></textarea></td>
+    <td><textarea rows="2" cols="20" class="form-control" id="meds[1]" placeholder="Enter the Prescribed Medicines"></textarea></td>
+  </tr>
+</table>
+</div>
+<center>
+  <button class="add_field_button w3-button w3-right w3-xlarge w3-circle w3-green">+</button>
+  <button class="remove w3-button w3-right w3-xlarge w3-circle w3-red">-</button>
+</center>
+</form>
+<button onclick="submitButton()"> Submit </button>
+
+<script>
+web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+json_string='[{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_encryption_key_hash","type":"string"}],"name":"addUser","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_hash","type":"string"}],"name":"storeHash","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_link","type":"string"}],"name":"storeLink","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"totalUsers","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_encryption_key_hash","type":"string"}],"name":"retrieveLink","outputs":[{"name":"","type":"string"},{"name":"","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_user_id","type":"string"},{"name":"_encryption_key_hash","type":"string"}],"name":"_isValid","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"}]';
+
+abi = JSON.parse(json_string);
+
+HealthcareContract = web3.eth.contract(abi);
+
+// In your nodejs console, execute contractInstance.address to get the address at which the contract is deployed and change the line below to use your deployed address
+
+var contractInstance = HealthcareContract.at('0xf00c316fd80dd64c87472bf22b2141349c1ceb87');
+var x=1;
+$(document).ready(function() {
+    var max_fields      = 500; //maximum input boxes allowed
+    var wrapper         = $(".input_fields_wrap"); //Fields wrapper
+    var add_button      = $(".add_field_button"); //Add button ID
+  var remove_field    = $(".remove");
+   
+    $(add_button).click(function(e){ //on add input button click
+        e.preventDefault();
+        if(x < max_fields){ //max input box allowed
+            x++; //text box increment
+      var htmlToAppend = '<div id="myText['+x+']"><table align="center"><tr><td><input type="date" name="date-of checkup" id="date['+x+']" placeholder="Enter the Date of Checkup"></td><td><textarea rows="2" cols="20" class="form-control" id="doc['+x+']" placeholder="Enter the name of Doctor"></textarea></td><td><textarea rows="2" cols="20" class="form-control" id="symp['+x+']" placeholder="Enter the symptoms Observed"></textarea></td><td><textarea rows="2" cols="20" class="form-control" id="diag['+x+']" placeholder="Enter the Result of Diagnosis"></textarea></td><td><textarea rows="2" cols="20" class="form-control" id="meds['+x+']" placeholder="Enter the Prescribed Medicines"></textarea></td></tr></table></div>'
+      document.getElementById("no_of_entries").value = x;
+      console.log(htmlToAppend);
+            $(wrapper).append(htmlToAppend); //add input box
+        }
+    });
+   
+    $(remove_field).click( function(e){ //user click on remove text
+        e.preventDefault();
+    var toremove = "myText[" + x +"]";
+    console.log(toremove);
+    element = document.getElementById(toremove);
+    element.parentNode.removeChild(element);
+    if(x>1)
+    x--;
+    });
+});
+
+
+function submitButton(){
+
+  console.log('fjkerjh');
+  username = '{{user.username}}';
+      var hashx = CryptoJS.SHA1('abcde');
+    encryption_key_hash = CryptoJS.enc.Hex.stringify(hashx);
+      
+      var date = "";
+      var meds = "";
+      var doctor = "";
+      var symptoms = "";
+      var diagnosis = "";
+      for(var i=1;i<=x;i++){
+        date+=document.getElementById('date['+i+']').value+"|||";
+        doctor+=(document.getElementById('doc['+i+']').value)+"|||";
+        symptoms+=(document.getElementById('symp['+i+']').value)+"|||";
+        diagnosis+=(document.getElementById('diag['+i+']').value)+"|||";
+        meds+=(document.getElementById('meds['+i+']').value)+"|||";
+      }
+      console.log(x, date, doctor, symptoms, diagnosis, meds);
+         $.post("/healthcare-recieve/", {no: x, date: date, doctor: doctor, symptoms:symptoms, diagnosis:diagnosis, meds:meds}, function(result){
+        console.log(result);
+        result_array = result.split(",");
+        var id=result_array[0];
+
+        id = CryptoJS.AES.encrypt(id, 'abcde');
+       var hash = CryptoJS.SHA1('hash');
+        var hash1 = CryptoJS.enc.Hex.stringify(hash);
+        console.log(id+hash);
+
+
+        contractInstance.storeLink(username+"", id+"", {from: web3.eth.accounts[0]}, function(result){
+          console.log("link done");
+              contractInstance.storeHash(username+"" ,hash1+"", {from: web3.eth.accounts[0]}, function() {
+                           xy = contractInstance.retrieveLink.call(username, encryption_key_hash);
+                            console.log(xy[0]+" "+xy[1]);
+                            } )
+              //$.post('/healthcare-validate/', {response:'Yes'});
+            }) 
+
+    });
+}
+</script>
+
+</body>
+</html>
+
+{% endblock %}

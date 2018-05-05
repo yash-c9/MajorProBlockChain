@@ -12,6 +12,16 @@ class Profile(models.Model):
 	encr_key = models.TextField()
 
 
-class DummyModel(models.Model):
-	name = models.TextField()
-	random_id = models.TextField()
+class Patient_Id(models.Model):
+
+	is_valid = models.BooleanField(default=False)
+
+
+class Patient_Data(models.Model):
+	doctor = models.TextField()
+	date = models.TextField()
+	symptoms = models.TextField()
+	diagnosis = models.TextField()
+	medicine = models.TextField()
+	procedure = models.TextField()
+	patient_id = models.ForeignKey(Patient_Id)
